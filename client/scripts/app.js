@@ -6,6 +6,7 @@ var app = {
   //list of friends
   friends: [],
 
+  //initalize app
   init() {
     //set jquery event handlers for ui elements
     //submit message when submit button is clicked
@@ -14,9 +15,9 @@ var app = {
     $('.submit').submit(app.handleSubmit); 
     //refresh messages when refresh button is fixed 
     $('.refresh').click(()=> {
+      //clear all messages
       app.clearMessages();
-      let currentRoom = $('#roomSelect').val();
-      $('#roomSelect').val(currentRoom);
+      //load messages for current room
       app.loadRoom();
     });
     //change room when room is selected from room dropdow
@@ -33,39 +34,8 @@ var app = {
       order: '-updatedAt'
     });
   },
-
-  loadRoom() {
-    //load messages from desired room
-    //clear all messages first
-    app.clearMessages();
-    //fetch messages filtered by current room
-    app.fetch(app.renderMessageData, {
-      where: {
-        roomname: $('#roomSelect').val()
-      },
-      order: '-updatedAt'
-    });
-  },
-
-  addRoom() {
-    // get room name from user
-    var newRoom = prompt('What is the name of the room?');
-    // if room is already in rooms' array, inform user
-    if (app.rooms.indexOf(newRoom) !== -1) {
-      var newRoom = alert('Room already exists.');
-    } else {
-      // else, if it is a new room
-      // append to rooms' drop box the new room
-      $('#roomSelect').append(`<option value="${newRoom}">${newRoom}</option>`);
-      // change drop box selection to new room
-      $('#roomSelect').val(newRoom);
-      // store new room in rooms' array
-      app.rooms.push(newRoom);
-      // load messages for chosen room
-      app.loadRoom();
-    }
-  },
-
+  
+  //server communication functions
   send(message) {
     //create ajax call to send message
     $.ajax({
@@ -96,7 +66,20 @@ var app = {
       }
     });
   },
-  
+
+  //message display functions
+  renderMessage(message) {
+    // append a div with username: text message after escaping and roonname to chat Id div
+    //get date of message
+    let date = new Date(message.updatedAt);
+    $('#chats').append(`<div class="message ${message.objectId}"><a href="#" class="username">${$('<div>').text(message.username).html()}</a>
+      <span class="text">${$('<div>').text(message.text).html()}</span><span class="time">${date.toLocaleDateString()} ${date.toLocaleTimeString()}</span></div>`);
+    // bold message if it's a friend's message
+    if (app.friends.indexOf(message.username) !== -1) {
+      $(`.${message.objectId}`).css('font-weight', 'bold');
+    }
+  },
+
   renderMessageData(data) {
     // display messages
     //iterate through data received from server
@@ -104,6 +87,26 @@ var app = {
       //render each message with renderMessage
       app.renderMessage(data.results[i]);
     }
+  },
+
+  clearMessages() {
+    // clears all messages
+    //clear chats div
+    $('#chats').empty();
+  },
+
+  //room functions
+  loadRoom() {
+    //load messages from desired room
+    //clear all messages first
+    app.clearMessages();
+    //fetch messages filtered by current room
+    app.fetch(app.renderMessageData, {
+      where: {
+        roomname: $('#roomSelect').val()
+      },
+      order: '-updatedAt'
+    });
   },
 
   getRoomList(data) {
@@ -125,24 +128,26 @@ var app = {
     app.loadRoom();
   },
 
-  clearMessages() {
-    // clears all messages
-    //clear chats div
-    $('#chats').empty();
-  },
-
-  renderMessage(message) {
-    // append a div with username: text message after escaping and roonname to chat Id div
-    //get date of message
-    let date = new Date(message.updatedAt);
-    $('#chats').append(`<div class="message ${message.objectId}"><a href="#" class="username">${$('<div>').text(message.username).html()}</a>
-      <span class="text">${$('<div>').text(message.text).html()}</span><span class="time">${date.toLocaleDateString()} ${date.toLocaleTimeString()}</span></div>`);
-    // bold message if it's a friend's message
-    if (app.friends.indexOf(message.username) !== -1) {
-      $(`.${message.objectId}`).css('font-weight', 'bold');
+  addRoom() {
+    // get room name from user
+    var newRoom = prompt('What is the name of the room?');
+    // if room is already in rooms' array, inform user
+    if (app.rooms.indexOf(newRoom) !== -1) {
+      var newRoom = alert('Room already exists.');
+    } else {
+      // else, if it is a new room
+      // append to rooms' drop box the new room
+      $('#roomSelect').append(`<option value="${newRoom}">${newRoom}</option>`);
+      // change drop box selection to new room
+      $('#roomSelect').val(newRoom);
+      // store new room in rooms' array
+      app.rooms.push(newRoom);
+      // load messages for chosen room
+      app.loadRoom();
     }
   },
 
+  //handler functions
   handleUsernameClick(event) {
     // push clicked friend to friend's array
     app.friends.push($(event.currentTarget).text());
@@ -158,7 +163,6 @@ var app = {
     username = username.split('=')[1]; 
     // get message typed in input text box 
     var messageText = $('#message').val();
-    console.log(`${username}: ${messageText}`);
     // build message
     var message = {
       username,
@@ -173,6 +177,7 @@ var app = {
     app.loadRoom();
   },
 
+  //misc spec functions
   renderRoom() {
     //just for spec
     $('#roomSelect').append('<div id="spec"></div>');
