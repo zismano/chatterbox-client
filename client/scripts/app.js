@@ -8,17 +8,15 @@ var app = {
     $('.submit').submit(app.handleSubmit);  // does nothing, exists only for spec
     $('.refresh').click(()=> {
       app.clearMessages();
-      //app.fetch(app.renderMessageData);
       let currentRoom = $('#roomSelect').val();
-      //app.fetch(app.getRooms);
       $('#roomSelect').val(currentRoom);
-      app.fetch(app.renderRoom);
+      app.fetch(app.refreshCurrentRoom);
     });
-    $('#rooms').on('change', '#roomSelect', app.fetch.bind(app, app.renderRoom));
+    $('#rooms').on('change', '#roomSelect', app.fetch.bind(app, app.refreshCurrentRoom));
     $('.addRoom').on('click', app.addRoom);
 
-    app.fetch(app.getRooms);
-    app.fetch(app.renderRoom);
+    app.fetch(app.getRoomList);
+    app.fetch(app.refreshCurrentRoom);
   },
   addRoom: () => {
     var newRoom = prompt('What is the name of the room?');
@@ -28,7 +26,7 @@ var app = {
       $('#roomSelect').append(`<option value="${newRoom}">${newRoom}</option>`);
       $('#roomSelect').val(newRoom);
       app.rooms.push(newRoom);
-      app.fetch(app.renderRoom);
+      app.fetch(app.refreshCurrentRoom);
     }
   },
   send(message) {
@@ -65,7 +63,7 @@ var app = {
       app.renderMessage(data.results[i]);
     }
   },
-  getRooms: (data) => {
+  getRoomList: (data) => {
     app.rooms = [];
     $('#roomSelect').empty();
     for (let i = 0; i < data.results.length; i++) {
@@ -85,7 +83,7 @@ var app = {
       $(`.${message.objectId}`).css('font-weight', 'bold');
     }
   },
-  renderRoom: (data) => {
+  refreshCurrentRoom: (data) => {
     app.clearMessages();
     for (let i = 0; i < data.results.length; i++) {
       if (data.results[i].roomname === $('#roomSelect').val()) {
@@ -95,7 +93,7 @@ var app = {
   },
   handleUsernameClick: (event) => {
     app.friends.push($(event.currentTarget).text());
-    app.fetch(app.renderRoom);
+    app.fetch(app.refreshCurrentRoom);
   },
   handleSubmit: (event) => {
     event.preventDefault();
@@ -110,6 +108,6 @@ var app = {
     };
     app.send(message);
     $('#message').val('');
-    app.fetch(app.renderRoom);
+    app.fetch(app.refreshCurrentRoom);
   }
 };
