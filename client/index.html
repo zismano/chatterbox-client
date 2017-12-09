@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="styles/styles.css">
 
     <!-- dependencies -->
+    <script src="bower_components/underscore/underscore.js"></script>
     <script src="bower_components/jquery/dist/jquery.js"></script>
     <script>
       // YOU DO NOT NEED TO EDIT THIS CODE
@@ -17,6 +18,7 @@
         newSearch += 'username=' + (prompt('What is your name?') || 'anonymous');
         window.location.search = newSearch;
       }
+      console.log(/(&|\?)username=/.test(window.location.search));
     </script>
     <!-- your scripts -->
     <script src="env/config.js"></script>
@@ -25,8 +27,21 @@
   <body>
     <div id="main">
       <h1>chatterbox</h1>
-      <!-- Your HTML goes here! -->
+    <div class="spinner"><img src="images/spiffygif_46x46.gif"></div>
+    <div id="rooms">
+      Room:
+      <select id="roomSelect">
+      </select>
+    </div>
+    <form action="#" id="send" method="post">
+      <input type="text" name="message" id="message"/>
+      <button class="submit">Submit</button>
+    </form>
+    <button class="refresh">Refresh</button>
     </div>
     <div id="chats"></div>
+    <script>
+    app.init();
+    </script>
   </body>
 </html>
