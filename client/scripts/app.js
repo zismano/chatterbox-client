@@ -1,7 +1,11 @@
 var app = {
+  //declare app properties
   server: 'http://parse.sfm8.hackreactor.com/chatterbox/classes/messages',
+  //list of rooms
   rooms: [],
+  //list of friends
   friends: [],
+
   init() {
     //set jquery event handlers for ui elements
     //submit message when submit button is clicked
@@ -23,15 +27,18 @@ var app = {
     $('#chats').on('click', '.username', app.handleUsernameClick);
 
     //do initial load of messages
-    // get data and build rooms list (rooms' dropbox selection)
+    //get data and build rooms list (rooms' dropbox selection)
     app.fetch(app.getRoomList, {
       limit: 1000,
       order: '-updatedAt'
     });
   },
-  loadRoom: () => {
+
+  loadRoom() {
     //load messages from desired room
+    //clear all messages first
     app.clearMessages();
+    //fetch messages filtered by current room
     app.fetch(app.renderMessageData, {
       where: {
         roomname: $('#roomSelect').val()
@@ -39,6 +46,7 @@ var app = {
       order: '-updatedAt'
     });
   },
+
   addRoom() {
     // get room name from user
     var newRoom = prompt('What is the name of the room?');
@@ -57,10 +65,11 @@ var app = {
       app.loadRoom();
     }
   },
+
   send(message) {
     //create ajax call to send message
     $.ajax({
-      url: 'http://parse.sfm8.hackreactor.com/chatterbox/classes/messages',
+      url: app.server,
       type: 'POST',
       data: JSON.stringify(message),
       contentType: 'application/json',
@@ -72,12 +81,12 @@ var app = {
       }
     });
   },
-  fetch: (callback, options = {order: '-updatedAt'}) => {
+
+  fetch(callback, options = {order: '-updatedAt'}) {
     //create ajax call to fetch messages from server
     $.ajax({
-      // This is the url you should use to communicate with the parse API server.
-      // adding order=-updateAt renders data (results) from server in descending order
-      url: 'http://parse.sfm8.hackreactor.com/chatterbox/classes/messages',
+      url: app.server,
+      //pass server parameters to filter data
       data: options,
       type: 'GET',
       // when success in getting data, do callback function
@@ -87,9 +96,9 @@ var app = {
       }
     });
   },
-
-  // display messages
-  renderMessageData: (data) => {
+  
+  renderMessageData(data) {
+    // display messages
     //iterate through data received from server
     for (let i = 0; i < data.results.length; i++) {
       //render each message with renderMessage
@@ -97,8 +106,7 @@ var app = {
     }
   },
 
-  // 
-  getRoomList: (data) => {
+  getRoomList(data) {
     // clear rooms' array
     app.rooms = [];
     // clears all rooms from roomSelect div (rooms' drop box selection) in order to add(append) current rooms from receieved data
@@ -117,30 +125,31 @@ var app = {
     app.loadRoom();
   },
 
-  // clears all messages
-  clearMessages: () => {
+  clearMessages() {
+    // clears all messages
     //clear chats div
     $('#chats').empty();
   },
 
-  // 
-  renderMessage: (message) => {
+  renderMessage(message) {
     // append a div with username: text message after escaping and roonname to chat Id div
+    //get date of message
     let date = new Date(message.updatedAt);
-    $('#chats').append(`<div class="${message.objectId}"><a href="#" class="username">${message.username}</a>: 
-      ${$('<div>').text(message.text).html()}, ${date.toLocaleDateString()} ${date.toLocaleTimeString()}</div>`);
+    $('#chats').append(`<div class="message ${message.objectId}"><a href="#" class="username">${$('<div>').text(message.username).html()}</a>
+      <span class="text">${$('<div>').text(message.text).html()}</span><span class="time">${date.toLocaleDateString()} ${date.toLocaleTimeString()}</span></div>`);
     // bold message if it's a friend's message
     if (app.friends.indexOf(message.username) !== -1) {
       $(`.${message.objectId}`).css('font-weight', 'bold');
     }
   },
 
-  handleUsernameClick: (event) => {
+  handleUsernameClick(event) {
     // push clicked friend to friend's array
     app.friends.push($(event.currentTarget).text());
     // get data and refresh current room
     app.loadRoom();
   },
+
   handleSubmit(event) {
     // prevent refresh of window (occurs since 'submit' button has type of submit)
     event.preventDefault();
@@ -163,6 +172,7 @@ var app = {
     // refresh messages of current room (in order to dispaly new message with previous messages of room)
     app.loadRoom();
   },
+
   renderRoom() {
     //just for spec
     $('#roomSelect').append('<div id="spec"></div>');
